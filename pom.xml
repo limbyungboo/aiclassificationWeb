@@ -144,6 +144,19 @@
 
 
 
+		<!-- https://mvnrepository.com/artifact/net.sf.sociaal/freetts -->
+		<!--
+		<dependency>
+		    <groupId>net.sf.sociaal</groupId>
+		    <artifactId>freetts</artifactId>
+		    <version>1.2.2</version>
+		</dependency>
+		<dependency>
+		    <groupId>com.sun.speech</groupId>
+		    <artifactId>freetts</artifactId>
+		    <version>1.2.2</version>
+		</dependency>
+		-->
 	    
         <!-- Apache Commons Imaging for image processing -->
         <dependency>
@@ -204,6 +217,18 @@
 				<enabled>false</enabled>
 			</releases>
 		</repository>
+		<!--
+		<repository>
+		    <id>sonatype-oss-public</id>
+		    <url>https://oss.sonatype.org/content/groups/public/</url>
+		    <releases>
+		        <enabled>true</enabled>
+		    </releases>
+		    <snapshots>
+		        <enabled>true</enabled>
+		    </snapshots>
+		</repository>
+		-->
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>

@@ -12,6 +12,9 @@ import java.nio.file.Files;
 import java.util.Enumeration;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -23,6 +26,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
+import com.sun.speech.freetts.audio.AudioPlayer;
+import com.sun.speech.freetts.audio.SingleFileAudioPlayer;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 import kr.co.aiweb.common.ApiResult;
 import kr.co.aiweb.machinelearning.common.ImageUtils;
 import kr.co.aiweb.machinelearning.trainmodel.TrainModel;
@@ -71,6 +81,9 @@ public class ClassificationController {
             apiResult.setResultCode("0000", "SUCCESSED");
             apiResult.setPredictResult(predictResult);
             apiResult.setLabelInfo(trModel.getLabelInfo());
+            
+            //음성파일 생성
+            createVoiceFile(predictResult.getLabelName());
 		}
 		catch(Exception e) {
 			log.error(e.getMessage(), e);
@@ -79,6 +92,55 @@ public class ClassificationController {
 		
 		return apiResult;
 	}
+	
+	/**음성파일 생성
+	 * @param labelName
+	 * @throws Exception
+	 */
+	private void createVoiceFile(String labelName) throws Exception {
+        System.setProperty("freetts.voices", "com.sun.speech.freetts.en.us.cmu_us_kal.KevinVoiceDirectory");
+        TrainModel trModel = TrainModelFactory.model();
+        
+        String[] splitLabel = labelName.split("_");
+        
+        VoiceManager vm = VoiceManager.getInstance();
+        Voice voice = vm.getVoice("kevin16"); // FreeTTS 기본 음성
+        if (voice == null) {
+        	throw new IllegalStateException("Voice not found!");
+        }
+        voice.allocate();
+        voice.setRate(90);// Setting the rate of the voice
+        voice.setPitch(100);// Setting the Pitch of the voice
+        voice.setVolume(300);// Setting the volume of the voice
+        
+        AudioPlayer audioPlayer = new SingleFileAudioPlayer(trModel.getRootDir().getAbsolutePath() + "/dummy", AudioFileFormat.Type.WAVE);
+        voice.setAudioPlayer(audioPlayer);
+        voice.speak(splitLabel[0]);
+        voice.speak(splitLabel[0]);
+        audioPlayer.close();
+	}
+	
+	/**
+	 * @param filename
+	 * @param response
+	 * @throws Exception
+	 */
+	@GetMapping("/classifyVoice")
+	public void playVoice(@RequestParam() String filename, HttpServletResponse response) throws Exception {
+		TrainModel trModel = TrainModelFactory.model();
+		response.setContentType("audio/wav");
+		File audioFile = new File(trModel.getRootDir(), "dummy.wav");
+		try (AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+             ServletOutputStream out = response.getOutputStream()) {
+        	
+        	response.setContentType("audio/wav");	
+        	AudioSystem.write(audioStream, AudioFileFormat.Type.WAVE, out);
+        }
+        catch(Exception e) {
+        	log.error(e.getMessage(), e);
+        }
+	}
+	
 	
 	
 	/**한습 진행중인지 체크
