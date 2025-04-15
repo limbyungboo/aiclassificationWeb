@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>머신러닝 (classification)</title>
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <div class="background-animation"></div>
+
+  <div class="container">
+    <h1 class="fade-in main-title">AI 머신러닝 (classification)</h1>
+
+	<div class="box upload-box slide-up">
+	  <div class="box-title">분류 테스트</div>
+	  
+	  <!-- button -->
+	  <div class="button-group">
+	    <label for="imageInput" class="upload-label">📁 이미지</label>
+	    <input type="file" id="imageInput" accept="image/*" />
+	    <button id="classifyBtn">🧪 분류</button>
+	    <button id="openTrainLayerBtn" class="right">🔧 학습</button>
+	  </div>
+	  
+	  <div class="result" id="resultBox">
+	    <!-- Classification result will show here -->
+	  </div>
+	  <div class="preview" id="previewContainer" style="display: none;">
+	    <img id="previewImage" src="" alt="Preview will appear here..." />
+	  </div>
+	</div>
+
+	 
+    <div class="box label-box slide-up" id="labelBox">
+	  <div class="box-title">분류가능 목록(labels)</div>
+      <div class="label-list" id="labelList">
+        <!-- Label names will be populated here -->
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- 학습 레이어 팝업 -->
+  <div class="train-layer" id="trainLayer" style="display: none;">
+    <div class="train-box">
+      <div class="box-title">🔧 학습 하기</div>
+
+      <!-- 패스워드 입력 -->
+      <div class="form-row">
+        <label for="adminPassword">패스워드</label>
+        <input type="password" id="adminPassword" placeholder="관리자 비밀번호 입력" />
+      </div>
+
+      <!-- 파일 첨부 -->
+      <div class="form-row">
+        <label for="zipFileUpload" class="upload-label">📦 학습파일(zip)</label>
+        <input type="file" id="zipFileUpload" accept=".zip" />
+        <span id="zipFileName" class="file-name">선택된 파일 없음</span>
+      </div>
+
+      <!-- 학습 버튼 -->
+	  <div class="train-actions">
+	    <button id="startTrainBtn">🚀 학습 시작</button>
+	    <button id="closeTrainLayerBtn" class="cancel-btn">❌ 닫기</button>
+	  </div>
+    </div>
+  </div>
+  
+  
+  <script src="../js/script.js"></script>
+  
+</body>
+</html>

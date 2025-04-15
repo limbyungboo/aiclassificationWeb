@@ -1,0 +1,60 @@
+/**
+ * 
+ */
+package kr.co.aiweb.machinelearning.trainmodel;
+
+import java.io.File;
+
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * 
+ */
+public class TrainModelFactory {
+
+	/**
+	 * Vgg16 model
+	 */
+	private static TrainModel _vgg16;
+	
+	/**
+	 * MultiLayerNetwork model
+	 */
+	private static TrainModel _multilayer;
+	
+	private static String _model;
+	
+	/**초기화
+	 * @param rootDir
+	 */
+	public static void initTrainModels(File rootDir, String model) throws Exception {
+		if(StringUtils.isNotBlank(_model) == true) {
+			return;
+		}
+		
+		_model = model; 
+		if("multilayer".equalsIgnoreCase(model) == true) {
+			if(_multilayer == null) {
+				_multilayer = new TrainModel_MultiLayer(rootDir);
+			}
+		}
+		else {
+			if(_vgg16 == null) {
+				_vgg16 = new TrainModel_Vgg16(rootDir);
+			}
+		}
+	}
+	
+	/**get model
+	 * @return
+	 */
+	public static TrainModel model() {
+		if("multilayer".equalsIgnoreCase(_model) == true) {
+			return _multilayer;
+		}
+		else {
+			return _vgg16;
+		}
+	}
+	
+}
