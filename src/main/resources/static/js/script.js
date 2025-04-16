@@ -76,7 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
       resultBox.innerText = "Error classifying image.";
     });
   });
-  
+
+  //테스트 결과 정보 설정   
   function resultBoxSet(resultvalue, confidence) {
 	resultBox.innerHTML = `<b>@ [예측 결과]</b> : ${resultvalue} <br/> <b>@ [정확도] :</b> ${confidence}`;
   }

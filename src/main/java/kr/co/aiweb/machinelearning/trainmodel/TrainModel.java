@@ -76,6 +76,7 @@ public abstract class TrainModel {
 		this.rootDir = rootDir;
 		this.datasetDir = new File(rootDir, "training_data/dataset");
 		initModel();
+		log.info("........... TrainModel Initialize End ");
 	}
 	
 	/**초기화

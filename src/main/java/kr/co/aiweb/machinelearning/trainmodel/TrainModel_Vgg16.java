@@ -68,6 +68,7 @@ public class TrainModel_Vgg16 extends TrainModel{
 		
 		//모델파일이 존재
 		if(modelFile.exists() == true) {
+			log.info(".............. 저장 학습모델 loading....... ");
 			model = ModelSerializer.restoreComputationGraph(modelFile);
 		}
 	}
