@@ -7,9 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 📌 Load label list on page load
   loadLableInfo();
-  console.log('111');
+  
   function loadLableInfo() {
-	console.log('222');
 	fetch('/classification/labels')
 	  .then(res => res.json())
 	  .then(result => {
@@ -59,13 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .then(result => {
 		if(result.resultCode != '0000') {
 		  alert(result.resultMsg);
-		  //resultBox.innerText = '';
-		  //resultBox.innerHTML = `<b>@ [예측 결과] : <br/> @ [정확도] : `;
 		  resultBoxSet('', '');
 		}
 		else {
 		  predictResult = result.predictResult;
-		  //resultBox.innerHTML = `<b>@ [예측 결과]</b> : ${predictResult.labelName} <br/> @ [정확도] : ${predictResult.confidence}`;
 		  resultBoxSet(predictResult.labelName, predictResult.confidence);
 		  const audio = new Audio('/classification/classifyVoice?filename=');
 		  audio.play();
