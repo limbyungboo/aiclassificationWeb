@@ -56,12 +56,14 @@ public class AiclassificationWebApplication implements CommandLineRunner {
 			rootDir = new File(rootdir_linux);
 		}
 		
-		String baseDir = System.getProperty(DL4JSystemProperties.DL4J_RESOURCES_DIR_PROPERTY);
-		log.info(" ######## GET deeplearning4j base dir = {}", baseDir);
-		if(StringUtils.isBlank(baseDir) == true) {
-			baseDir = String.format("%s/deeplearning4j", rootDir.getAbsolutePath());
-			log.info(" ######## SET deeplearning4j base dir = {}", baseDir);
-			System.setProperty(DL4JSystemProperties.DL4J_RESOURCES_DIR_PROPERTY, baseDir);
+		if("multilayer".equalsIgnoreCase(model) == false) {
+			String baseDir = System.getProperty(DL4JSystemProperties.DL4J_RESOURCES_DIR_PROPERTY);
+			log.info(" ######## GET deeplearning4j base dir = {}", baseDir);
+			if(StringUtils.isBlank(baseDir) == true) {
+				baseDir = String.format("%s/deeplearning4j", rootDir.getAbsolutePath());
+				log.info(" ######## SET deeplearning4j base dir = {}", baseDir);
+				System.setProperty(DL4JSystemProperties.DL4J_RESOURCES_DIR_PROPERTY, baseDir);
+			}
 		}
 		
 		//model 초기화

@@ -18,6 +18,7 @@ import javax.sound.sampled.AudioSystem;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -284,7 +285,7 @@ public class ClassificationController {
 		TrainModel trModel = TrainModelFactory.model();
 		File datasetDir = trModel.getDatasetDir();
 		if(datasetDir.exists() == true) {
-			datasetDir.delete();
+			FileUtils.deleteDirectory(datasetDir);  // 내부 파일까지 전부 삭제됨
 		}
 		datasetDir.mkdirs();
 		

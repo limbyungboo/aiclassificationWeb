@@ -132,7 +132,12 @@
             <version>${deeplearning4j.version}</version>
         </dependency>
 	    
-	    
+	    <!-- DataVec for image loading -->
+	    <dependency>
+	        <groupId>org.datavec</groupId>
+	        <artifactId>datavec-data-image</artifactId>
+	        <version>${deeplearning4j.version}</version>
+	    </dependency>	    
 	    
 	    
 	    <!-- OpenCV -->
@@ -164,6 +169,12 @@
             <artifactId>commons-imaging</artifactId>
             <version>1.0-alpha2</version>
         </dependency>
+        
+		<dependency>
+		    <groupId>commons-io</groupId>
+		    <artifactId>commons-io</artifactId>
+		    <version>2.11.0</version> <!-- 최신 버전 확인 -->
+		</dependency>        
 	    
 	    <dependency>
 	        <groupId>com.fasterxml.jackson.core</groupId>

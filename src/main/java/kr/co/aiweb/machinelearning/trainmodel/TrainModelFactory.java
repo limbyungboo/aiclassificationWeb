@@ -22,6 +22,11 @@ public class TrainModelFactory {
 	 */
 	private static TrainModel _multilayer;
 	
+	/**
+	 * MobileNetV2
+	 */
+	private static TrainModel _resnet50;
+	
 	private static String _model;
 	
 	/**초기화
@@ -31,11 +36,15 @@ public class TrainModelFactory {
 		if(StringUtils.isNotBlank(_model) == true) {
 			return;
 		}
-		
 		_model = model; 
 		if("multilayer".equalsIgnoreCase(model) == true) {
 			if(_multilayer == null) {
 				_multilayer = new TrainModel_MultiLayer(rootDir);
+			}
+		}
+		else if("resnet50".equalsIgnoreCase(model) == true) {
+			if(_resnet50 == null) {
+				_resnet50 = new TrainModel_ResNet50(rootDir);
 			}
 		}
 		else {
@@ -51,6 +60,9 @@ public class TrainModelFactory {
 	public static TrainModel model() {
 		if("multilayer".equalsIgnoreCase(_model) == true) {
 			return _multilayer;
+		}
+		else if("resnet50".equalsIgnoreCase(_model) == true) {
+			return _resnet50;
 		}
 		else {
 			return _vgg16;
