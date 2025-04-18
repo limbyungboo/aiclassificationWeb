@@ -120,12 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
   
   //------------------------
-  // 차트 레이어 열기
+  // 차트 소켓 연결
   //------------------------
-  document.getElementById('openChartLayerBtn')?.addEventListener('click', () => {
-	document.getElementById('chartLayer').style.display = 'flex';
-  });
-  
   chartLoad();
   function chartLoad() {
 	const ctx = document.getElementById('trainChart').getContext('2d');
@@ -160,13 +156,6 @@ document.addEventListener("DOMContentLoaded", () => {
 	};
   }
   
-  
-  //------------------------
-  // 차트 레이어 닫기
-  //------------------------
-  document.getElementById("closeChartLayerBtn").addEventListener("click", () => {
-    document.getElementById("chartLayer").style.display = "none";
-  });
   
 
   //------------------------
