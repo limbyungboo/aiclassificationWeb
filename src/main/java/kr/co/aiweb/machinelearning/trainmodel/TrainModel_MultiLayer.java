@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
@@ -22,9 +23,12 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.learning.config.Adam;
-import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
+//import ai.djl.modality.Classifications;
+//import ai.djl.modality.cv.Image;
+//import ai.djl.modality.cv.translator.ImageClassificationTranslator;
+//import ai.djl.repository.zoo.Criteria;
 import kr.co.aiweb.machinelearning.common.MLConst.DatasetConst;
 import kr.co.aiweb.machinelearning.vo.LabelInfo;
 import kr.co.aiweb.machinelearning.vo.PredictResult;
@@ -44,10 +48,17 @@ public class TrainModel_MultiLayer extends TrainModel {
 	/**
 	 * FineTuneConfiguration
 	 */
+//	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
+//		    .updater(new Nesterovs(0.01, 0.9))  // 옵티마이저
+//		    .seed(DatasetConst.SEED.getValue())
+//		    .build();
 	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
-		    .updater(new Nesterovs(0.01, 0.9))  // 옵티마이저
-		    .seed(DatasetConst.SEED.getValue())
-		    .build();
+			.updater(new Adam(1e-4))
+			.seed(DatasetConst.SEED.getValue())
+			.activation(Activation.RELU)
+			.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+			.build();
+
 	
 	/**constructor
 	 * @param rootDir
@@ -88,7 +99,7 @@ public class TrainModel_MultiLayer extends TrainModel {
 			MultiLayerConfiguration configuration = configuration(nOut);
 			model = new MultiLayerNetwork(configuration);
 			model.init();
-			model.setListeners(new ScoreIterationListener(10));
+			model.setListeners(new ScoreIterationListener(DatasetConst.EPOCHS.getValue()));
 			return;
 		}
 		
@@ -113,8 +124,18 @@ public class TrainModel_MultiLayer extends TrainModel {
 			        .nIn(128)   // 이전 레이어의 출력 수
 			        .nOut(nOut)  // 새로운 클래스 개수
 			        .activation(Activation.SOFTMAX)
+			        .weightInit(WeightInit.XAVIER)
 			        .build())
-			    .build();		
+			    .build();
+		model.setListeners(new ScoreIterationListener(DatasetConst.EPOCHS.getValue()));
+		
+//		Criteria<Image, Classifications> criteria = Criteria.builder()
+//			    .setTypes(Image.class, Classifications.class)
+//			    .optModelUrls("https://mlrepo.djl.ai/model/cv/image_classification/mobilenetv2/ai.djl.pytorch/mobilenetv2.zip")
+//			    .optTranslator(ImageClassificationTranslator.builder().build())
+//			    .optEngine("PyTorch")
+//			    .build();		
+		
 	}
 
 	/**@Override 
@@ -174,10 +195,12 @@ public class TrainModel_MultiLayer extends TrainModel {
      */
     private MultiLayerConfiguration configuration(int nOut) {
     	
+    	//new Adam(1e-4)
         // 모델 구성
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
             .seed(42)
-            .updater(new Adam(0.001))  // ✅ Adam 사용
+            //.updater(new Adam(0.001))  // ✅ Adam 사용
+            .updater(new Adam(1e-4))  // ✅ Adam 사용
             .weightInit(WeightInit.XAVIER)
             .list()
             .layer(0, new ConvolutionLayer.Builder(3, 3)

@@ -32,7 +32,11 @@
 		<java.version>17</java.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <!--
         <djl.version>0.20.0</djl.version>
+        -->
+        <djl.version>0.25.0</djl.version>
+        
         <deeplearning4j.version>1.0.0-beta7</deeplearning4j.version>
         <mxnet.native.version>1.9.1</mxnet.native.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -70,7 +74,7 @@
 
 		
 		<!--#################################### -->
-		<!--AI 머신러닝 관련 -->
+		<!--ai.djl  -->
 		<!--#################################### -->
         <!-- DJL Core -->
         <dependency>
@@ -79,14 +83,34 @@
             <version>${djl.version}</version>
         </dependency>
 
-        <!-- DJL MXNet Engine -->
+	    <!-- DJL 기본 모델 허브 -->
+	    <dependency>
+	        <groupId>ai.djl</groupId>
+	        <artifactId>model-zoo</artifactId>
+	        <version>${djl.version}</version>
+	    </dependency>
+
+	    <!-- 이미지 처리 -->
+	    <dependency>
+	        <groupId>ai.djl</groupId>
+	        <artifactId>basicdataset</artifactId>
+	        <version>${djl.version}</version>
+	    </dependency>
+
+		<!-- ============================ -->
+		<!-- MXNet  -->
+		<!-- ============================ -->
+        <!-- MXNet Engine -->
+        <!--
         <dependency>
             <groupId>ai.djl.mxnet</groupId>
             <artifactId>mxnet-engine</artifactId>
             <version>${djl.version}</version>
         </dependency>
+        -->
 
-        <!-- DJL MXNet Native Library -->
+        <!-- MXNet Native Library -->
+        <!--
         <dependency>
             <groupId>ai.djl.mxnet</groupId>
             <artifactId>mxnet-native-mkl</artifactId>
@@ -94,18 +118,54 @@
             <version>${mxnet.native.version}</version>
             <scope>runtime</scope>
         </dependency>
+        -->
 
-        <!-- DJL Model Zoo -->
+        <!-- MXNet Model Zoo -->
+        <!--
         <dependency>
             <groupId>ai.djl.mxnet</groupId>
             <artifactId>mxnet-model-zoo</artifactId>
             <version>${djl.version}</version>
         </dependency>
+        -->
+
+		<!-- ============================ -->
+		<!-- pytorch  -->
+		<!-- ============================ -->
+	    <!-- pytorch Engine 선택 (예: PyTorch) -->
+	    <!--
+	    <dependency>
+	        <groupId>ai.djl.pytorch</groupId>
+	        <artifactId>pytorch-engine</artifactId>
+	        <version>${djl.version}</version>
+	    </dependency>
+	    -->
+
+	    <!-- pytorch 모델 Zoo -->
+	    <!--
+	    <dependency>
+	        <groupId>ai.djl.pytorch</groupId>
+	        <artifactId>pytorch-model-zoo</artifactId>
+	        <version>${djl.version}</version>
+	    </dependency>
+	    -->
+
+		<!-- https://mvnrepository.com/artifact/ai.djl.pytorch/pytorch-native-auto -->
+		<!--
+		<dependency>
+		    <groupId>ai.djl.pytorch</groupId>
+		    <artifactId>pytorch-native-auto</artifactId>
+		    <version>1.9.1</version>
+		    <scope>runtime</scope>
+		</dependency>
+		-->
 
 
 
 
-
+		<!--#################################### -->
+		<!--org.deeplearning4j  -->
+		<!--#################################### -->
 	    <!-- DeepLearning4j -->
 	    <dependency>
 	        <groupId>org.deeplearning4j</groupId>
@@ -150,18 +210,12 @@
 
 
 		<!-- https://mvnrepository.com/artifact/net.sf.sociaal/freetts -->
+		<!-- 문자를 음성으로 -->
 		<dependency>
 		    <groupId>net.sf.sociaal</groupId>
 		    <artifactId>freetts</artifactId>
 		    <version>1.2.2</version>
 		</dependency>
-		<!--
-		<dependency>
-		    <groupId>com.sun.speech</groupId>
-		    <artifactId>freetts</artifactId>
-		    <version>1.2.2</version>
-		</dependency>
-		-->
 	    
         <!-- Apache Commons Imaging for image processing -->
         <dependency>
