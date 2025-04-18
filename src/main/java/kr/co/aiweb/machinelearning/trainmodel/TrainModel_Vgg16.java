@@ -2,6 +2,7 @@ package kr.co.aiweb.machinelearning.trainmodel;
 
 import java.io.File;
 
+import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -9,6 +10,9 @@ import org.deeplearning4j.nn.graph.ComputationGraph;
 import org.deeplearning4j.nn.transferlearning.FineTuneConfiguration;
 import org.deeplearning4j.nn.transferlearning.TransferLearning;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.model.stats.StatsListener;
+import org.deeplearning4j.ui.model.storage.FileStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.deeplearning4j.zoo.PretrainedType;
 import org.deeplearning4j.zoo.model.VGG16;
@@ -19,7 +23,8 @@ import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import kr.co.aiweb.machinelearning.common.MLConst.DatasetConst;
+import kr.co.aiweb.machinelearning.common.MLConst.MLDatasetConst;
+import kr.co.aiweb.machinelearning.listener.RealTimeTrainingListener;
 import kr.co.aiweb.machinelearning.vo.LabelInfo;
 import kr.co.aiweb.machinelearning.vo.PredictResult;
 import lombok.extern.slf4j.Slf4j;
@@ -39,11 +44,11 @@ public class TrainModel_Vgg16 extends TrainModel{
 	 * FineTuneConfiguration
 	 */
 	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
-		    															.updater(new Adam(1e-4))
-		    															.seed(DatasetConst.SEED.getValue())
-		    															.activation(Activation.RELU)
-		    															.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-		    															.build();
+		    									.updater(new Adam(1e-4))
+		    									.seed(MLDatasetConst.SEED.getValue())
+		    									//.activation(Activation.RELU)
+		    									.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+		    									.build();
     
 	/**constructor
 	 * @param rootDir
@@ -59,8 +64,9 @@ public class TrainModel_Vgg16 extends TrainModel{
 	@Override
 	protected void initModel() throws Exception {
 		
-		super.modelFile = new File(rootDir, "classification_model_vgg16.zip");
-		super.labelFile = new File(rootDir, "classification_label_vgg16.json");
+		super.modelFile = new File(rootDir, "vgg16_model.zip");
+		super.labelFile = new File(rootDir, "vgg16_label.json");
+		super.statFile = new File(rootDir, "vgg16_stat.dl4j");
 		preProcessor = new VGG16ImagePreProcessor();
 		
 		//label 정보 로드
@@ -79,6 +85,7 @@ public class TrainModel_Vgg16 extends TrainModel{
 	@Override
 	protected void updateModel(int nOut) throws Exception {
 		ComputationGraph baseModel = null;
+		
 		if(model == null) {
 			baseModel = (ComputationGraph) VGG16.builder().build().initPretrained(PretrainedType.IMAGENET);
 			log.info("----- load successed original vgg16 model");
@@ -89,10 +96,10 @@ public class TrainModel_Vgg16 extends TrainModel{
 			    OutputLayer ol = (OutputLayer) outputLayer.conf().getLayer();
 				//기존 out 가 동일할경우
 			    if(nOut == ol.getNOut()) {
+			    	setListeners();
 					return;
 				}
 			}
-			
 			baseModel = model;
 		}
 		
@@ -109,8 +116,25 @@ public class TrainModel_Vgg16 extends TrainModel{
                         .build(), "fc2")
                 .setOutputs("predictions")
                 .build();
+		
+		//set listeners
+		setListeners();
 	}
-    
+	
+	/**
+	 * set listeners
+	 */
+	private void setListeners() {
+		if(model.getListeners().size() == 0) {
+			StatsStorage statsStorage = new FileStatsStorage(super.statFile);
+			model.setListeners(
+				  new ScoreIterationListener(MLDatasetConst.EPOCHS.getValue())
+				, new RealTimeTrainingListener()
+				, new StatsListener(statsStorage)
+			);
+		}
+	}
+	
 	/**@Override 
 	 * @see kr.co.aiweb.machinelearning.trainmodel.TrainModel#fit(java.io.File)
 	 */
@@ -123,7 +147,7 @@ public class TrainModel_Vgg16 extends TrainModel{
 		updateModel(labelInfo.getLabelCount());
 		
 		log.info("---------------------------------- start training.");
-		model.fit(datasetIter, DatasetConst.EPOCHS.getValue());
+		model.fit(datasetIter, MLDatasetConst.EPOCHS.getValue());
 		
 		log.info("---------------------------------- model save.");
 		modelSave();

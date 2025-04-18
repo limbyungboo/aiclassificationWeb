@@ -6,11 +6,11 @@ import lombok.Getter;
  * machine learning const
  */
 public interface MLConst {
-
+	
 	/**
 	 * Dataset Const
 	 */
-	public enum DatasetConst {
+	public enum MLDatasetConst {
 		BATCHSIZE(16)
 		,SEED(123)
 		,WIDTH(224)
@@ -20,11 +20,10 @@ public interface MLConst {
 		;
 		
 		@Getter
-		private int value;
+		private final int value;
 		
-		private DatasetConst(int value) {
+		private MLDatasetConst(int value) {
 			this.value = value;
 		}
 	}
-
 }

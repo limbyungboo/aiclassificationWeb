@@ -19,7 +19,7 @@ import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.factory.Nd4j;
 
 import kr.co.aiweb.machinelearning.common.ImageUtils;
-import kr.co.aiweb.machinelearning.common.MLConst.DatasetConst;
+import kr.co.aiweb.machinelearning.common.MLConst.MLDatasetConst;
 import kr.co.aiweb.machinelearning.vo.LabelInfo;
 import kr.co.aiweb.machinelearning.vo.PredictResult;
 import lombok.Getter;
@@ -51,6 +51,11 @@ public abstract class TrainModel {
 	protected File labelFile;
 	
 	/**
+	 * stat file
+	 */
+	protected File statFile;
+	
+	/**
 	 * dataset directory
 	 */
 	@Getter
@@ -65,7 +70,7 @@ public abstract class TrainModel {
 	/**
 	 * image loader
 	 */
-	protected NativeImageLoader loader = new NativeImageLoader(DatasetConst.HEIGHT.getValue(), DatasetConst.WIDTH.getValue(), DatasetConst.CHANNELS.getValue());
+	protected NativeImageLoader loader = new NativeImageLoader(MLDatasetConst.HEIGHT.getValue(), MLDatasetConst.WIDTH.getValue(), MLDatasetConst.CHANNELS.getValue());
 	
 	
 	/**constructor
@@ -170,7 +175,7 @@ public abstract class TrainModel {
 
         // Create and return DataSetIterator
         Collections.shuffle(dataSetList, new Random(123));
-        return new ListDataSetIterator<>(dataSetList, DatasetConst.BATCHSIZE.getValue());
-    }		
+        return new ListDataSetIterator<>(dataSetList, MLDatasetConst.BATCHSIZE.getValue());
+    }
 	
 }

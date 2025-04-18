@@ -12,9 +12,9 @@
 	<!-- spring.profiles.active 의 값을 aws 로  설정한경우 >> aws 서버 로그 디렉토리 -->
 	<springProfile name="linux">
 		<!--
-		<property name="LOG_DIR" value="/home/svn/machine_learning/logs" />
-		-->
 		<property name="LOG_DIR" value="/machinelearning/ml_data/logs" />
+		-->
+		<property name="LOG_DIR" value="/home/svn/machine_learning/logs" />
 	</springProfile>
 
 	<!-- 로그 level -->

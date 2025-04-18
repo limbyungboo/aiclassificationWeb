@@ -111,7 +111,63 @@ document.addEventListener("DOMContentLoaded", () => {
   //------------------------
   document.getElementById("closeTrainLayerBtn").addEventListener("click", () => {
     document.getElementById("trainLayer").style.display = "none";
-  });  
+  });
+  
+  
+  
+  
+  
+  
+  
+  //------------------------
+  // 차트 레이어 열기
+  //------------------------
+  document.getElementById('openChartLayerBtn')?.addEventListener('click', () => {
+	document.getElementById('chartLayer').style.display = 'flex';
+  });
+  
+  chartLoad();
+  function chartLoad() {
+	const ctx = document.getElementById('trainChart').getContext('2d');
+	const chart = new Chart(ctx, {
+	  type: 'line',
+	  data: {
+	    labels: [],
+	    datasets: [{
+	      label: 'Loss',
+	      data: [],
+	      borderColor: 'rgba(75, 192, 192, 1)',
+	      fill: false
+	    }]
+	  },
+	  options: {
+	    animation: false,
+	    responsive: true,
+	    scales: {
+	      y: {
+	        beginAtZero: true
+	      }
+	    }
+	  }
+	});
+
+	const socket = new WebSocket("ws://" + location.host + "/ws/train_chart");
+	socket.onmessage = function(event) {
+	  const data = JSON.parse(event.data);
+	  chart.data.labels.push(data.iteration);
+	  chart.data.datasets[0].data.push(data.loss);
+	  chart.update();
+	};
+  }
+  
+  
+  //------------------------
+  // 차트 레이어 닫기
+  //------------------------
+  document.getElementById("closeChartLayerBtn").addEventListener("click", () => {
+    document.getElementById("chartLayer").style.display = "none";
+  });
+  
 
   //------------------------
   // 학습 요청
@@ -128,7 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	checkTraing();
   });
   
-  
+  //현재 학습 가능한지 체크
   function checkTraing() {
 	const password = document.getElementById('adminPassword').value;
 	const formData = new FormData();
@@ -144,7 +200,7 @@ document.addEventListener("DOMContentLoaded", () => {
 		  alert(result.resultMsg);
 		}
 		else {
-		  training();
+		  reqTraining();
 		}
 	})
 	.catch(err => {
@@ -152,7 +208,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	});
   }
   
-  function training() {
+  //실제 학습 요청
+  function reqTraining() {
 	const password = document.getElementById('adminPassword').value;
 	const zipFile = document.getElementById('zipFileUpload').files[0];
 	
@@ -167,6 +224,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	.then(res => res.json())
 	.then(result => {
 		alert(result.resultMsg);
+		if(result.resultCode == '0000') {
+			document.getElementById("trainLayer").style.display = "none";
+		}
 	})
 	.catch(err => {
 	  console.error("training failed:", err);

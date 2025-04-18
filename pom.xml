@@ -55,6 +55,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -177,6 +181,11 @@
 	        <artifactId>nd4j-native-platform</artifactId>
 	        <version>${deeplearning4j.version}</version>
 	    </dependency>
+		<dependency>
+		    <groupId>org.deeplearning4j</groupId>
+		    <artifactId>deeplearning4j-ui</artifactId>
+		    <version>${deeplearning4j.version}</version>
+		</dependency>	    
 
 		<!-- DataVec (데이터 전처리용) -->
         <dependency>

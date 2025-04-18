@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -17,6 +18,8 @@ import org.deeplearning4j.nn.transferlearning.FineTuneConfiguration;
 import org.deeplearning4j.nn.transferlearning.TransferLearning;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.model.stats.StatsListener;
+import org.deeplearning4j.ui.model.storage.FileStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -29,7 +32,8 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 //import ai.djl.modality.cv.Image;
 //import ai.djl.modality.cv.translator.ImageClassificationTranslator;
 //import ai.djl.repository.zoo.Criteria;
-import kr.co.aiweb.machinelearning.common.MLConst.DatasetConst;
+import kr.co.aiweb.machinelearning.common.MLConst.MLDatasetConst;
+import kr.co.aiweb.machinelearning.listener.RealTimeTrainingListener;
 import kr.co.aiweb.machinelearning.vo.LabelInfo;
 import kr.co.aiweb.machinelearning.vo.PredictResult;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +58,7 @@ public class TrainModel_MultiLayer extends TrainModel {
 //		    .build();
 	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
 			.updater(new Adam(1e-4))
-			.seed(DatasetConst.SEED.getValue())
+			.seed(MLDatasetConst.SEED.getValue())
 			.activation(Activation.RELU)
 			.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
 			.build();
@@ -73,9 +77,9 @@ public class TrainModel_MultiLayer extends TrainModel {
 	 */
 	@Override
 	protected void initModel() throws Exception {
-
-		super.modelFile = new File(rootDir, "classification_model_multilayer.zip");
-		super.labelFile = new File(rootDir, "classification_label_multilayer.json");
+		super.modelFile = new File(rootDir, "multilayer_model.zip");
+		super.labelFile = new File(rootDir, "multilayer_label.json");
+		super.statFile = new File(rootDir, "multilayer_stat.dl4j");
 		super.preProcessor = new ImagePreProcessingScaler();
 
 		//label 정보 로드
@@ -99,7 +103,8 @@ public class TrainModel_MultiLayer extends TrainModel {
 			MultiLayerConfiguration configuration = configuration(nOut);
 			model = new MultiLayerNetwork(configuration);
 			model.init();
-			model.setListeners(new ScoreIterationListener(DatasetConst.EPOCHS.getValue()));
+			//set listeners
+			setListeners();
 			return;
 		}
 		
@@ -127,8 +132,9 @@ public class TrainModel_MultiLayer extends TrainModel {
 			        .weightInit(WeightInit.XAVIER)
 			        .build())
 			    .build();
-		model.setListeners(new ScoreIterationListener(DatasetConst.EPOCHS.getValue()));
-		
+
+		//set listeners
+		setListeners();
 //		Criteria<Image, Classifications> criteria = Criteria.builder()
 //			    .setTypes(Image.class, Classifications.class)
 //			    .optModelUrls("https://mlrepo.djl.ai/model/cv/image_classification/mobilenetv2/ai.djl.pytorch/mobilenetv2.zip")
@@ -138,6 +144,20 @@ public class TrainModel_MultiLayer extends TrainModel {
 		
 	}
 
+	/**
+	 * set listeners
+	 */
+	private void setListeners() {
+		if(model.getListeners().size() == 0) {
+			StatsStorage statsStorage = new FileStatsStorage(super.statFile);
+			model.setListeners(
+				  new ScoreIterationListener(MLDatasetConst.EPOCHS.getValue())
+				, new RealTimeTrainingListener()
+				, new StatsListener(statsStorage)
+			);
+		}
+	}
+	
 	/**@Override 
 	 * @see kr.co.aiweb.machinelearning.trainmodel.TrainModel#fit(java.io.File)
 	 */
@@ -150,7 +170,7 @@ public class TrainModel_MultiLayer extends TrainModel {
 		updateModel(labelInfo.getLabelCount());
 		
 		log.info("---------------------------------- start training.");
-		model.fit(datasetIter, DatasetConst.EPOCHS.getValue());
+		model.fit(datasetIter, MLDatasetConst.EPOCHS.getValue());
 		
 		log.info("---------------------------------- model save.");
 		modelSave();
@@ -204,7 +224,7 @@ public class TrainModel_MultiLayer extends TrainModel {
             .weightInit(WeightInit.XAVIER)
             .list()
             .layer(0, new ConvolutionLayer.Builder(3, 3)
-                .nIn(DatasetConst.CHANNELS.getValue())
+                .nIn(MLDatasetConst.CHANNELS.getValue())
                 .nOut(32)
                 .stride(1, 1)
                 .activation(Activation.RELU)
@@ -230,7 +250,7 @@ public class TrainModel_MultiLayer extends TrainModel {
                 .nOut(nOut)
                 .activation(Activation.SOFTMAX)
                 .build())
-            .setInputType(InputType.convolutional(DatasetConst.HEIGHT.getValue(), DatasetConst.WIDTH.getValue(), DatasetConst.CHANNELS.getValue()))
+            .setInputType(InputType.convolutional(MLDatasetConst.HEIGHT.getValue(), MLDatasetConst.WIDTH.getValue(), MLDatasetConst.CHANNELS.getValue()))
             .build();
     	return conf;
     }	

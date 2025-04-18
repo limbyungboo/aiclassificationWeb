@@ -6,6 +6,7 @@
   <title>머신러닝 (classification)</title>
   <link rel="shortcut icon" href="#">
   <link rel="stylesheet" href="../css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="background-animation"></div>
@@ -22,6 +23,7 @@
 	    <input type="file" id="imageInput" accept="image/*" />
 	    <button id="classifyBtn">🧪 분류 (voice 알림)</button>
 	    <button id="openTrainLayerBtn" class="right">🔧 학습</button>
+		<button id="openChartLayerBtn" class="right">🔧 학습차트</button>
 	  </div>
 	  
 	  <div class="result" id="resultBox">
@@ -68,6 +70,22 @@
     </div>
   </div>
   
+  <!--차트 레이어 팝업-->
+  <div class="train-layer" id="chartLayer" style="display: none;">
+    <div class="train-box">
+      <div class="box-title">🔧 실시간 학습 그래프</div>
+
+      <!-- 패스워드 입력 -->
+      <div class="form-row">
+		<canvas id="trainChart" width="100%" height="100%"></canvas>
+      </div>
+
+      <!-- 학습 버튼 -->
+      <div class="train-actions">
+        <button id="closeChartLayerBtn" class="cancel-btn">❌ 닫기</button>
+      </div>
+    </div>
+  </div>
   
   <script src="../js/script.js"></script>
   

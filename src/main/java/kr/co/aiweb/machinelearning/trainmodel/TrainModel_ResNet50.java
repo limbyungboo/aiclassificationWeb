@@ -2,6 +2,7 @@ package kr.co.aiweb.machinelearning.trainmodel;
 
 import java.io.File;
 
+import org.deeplearning4j.core.storage.StatsStorage;
 import org.deeplearning4j.nn.api.Layer;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
@@ -10,6 +11,8 @@ import org.deeplearning4j.nn.transferlearning.FineTuneConfiguration;
 import org.deeplearning4j.nn.transferlearning.TransferLearning;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.model.stats.StatsListener;
+import org.deeplearning4j.ui.model.storage.FileStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.deeplearning4j.zoo.PretrainedType;
 import org.deeplearning4j.zoo.ZooModel;
@@ -21,7 +24,8 @@ import org.nd4j.linalg.dataset.api.preprocessor.VGG16ImagePreProcessor;
 import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 
-import kr.co.aiweb.machinelearning.common.MLConst.DatasetConst;
+import kr.co.aiweb.machinelearning.common.MLConst.MLDatasetConst;
+import kr.co.aiweb.machinelearning.listener.RealTimeTrainingListener;
 import kr.co.aiweb.machinelearning.vo.LabelInfo;
 import kr.co.aiweb.machinelearning.vo.PredictResult;
 import lombok.extern.slf4j.Slf4j;
@@ -40,24 +44,11 @@ public class TrainModel_ResNet50 extends TrainModel{
 	/**
 	 * FineTuneConfiguration
 	 */
-//	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
-//		    									.updater(new Adam(1e-4))	// 또는 new Nesterovs(1e-3, 0.9)
-//												//.updater(new Nesterovs(1e-3, 0.9))
-//		    									.seed(DatasetConst.SEED.getValue())
-//		    									//.activation(Activation.RELU)
-//		    									//.activation(Activation.SOFTMAX)
-//		    									.weightInit(WeightInit.XAVIER)
-//											    .gradientNormalization(GradientNormalization.RenormalizeL2PerLayer)
-//											    .trainingWorkspaceMode(WorkspaceMode.ENABLED)
-//											    .inferenceWorkspaceMode(WorkspaceMode.ENABLED)
-//											    .build();
 	private FineTuneConfiguration fineTuneConf = new FineTuneConfiguration.Builder()
-			.updater(new Adam(1e-3))
-			//.updater(new Nesterovs(1e-3, 0.9))
-			.seed(DatasetConst.SEED.getValue())
-			//.activation(Activation.RELU)
-			.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-			.build();
+												.updater(new Adam(1e-4))
+												.seed(MLDatasetConst.SEED.getValue())
+												.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+												.build();
 	
 	/**constructor
 	 * @param rootDir
@@ -72,11 +63,9 @@ public class TrainModel_ResNet50 extends TrainModel{
 	 */
 	@Override
 	protected void initModel() throws Exception {
-		
-		super.modelFile = new File(rootDir, "classification_model_resnet50.zip");
-		super.labelFile = new File(rootDir, "classification_label_resnet50.json");
-		
-		//preProcessor = new ImagePreProcessingScaler(0, 1);
+		super.modelFile = new File(rootDir, "resnet50_model.zip");
+		super.labelFile = new File(rootDir, "resnet50_label.json");
+		super.statFile = new File(rootDir, "resnet50_stat.dl4j");
 		preProcessor = new VGG16ImagePreProcessor();
 		
 		//label 정보 로드
@@ -99,83 +88,56 @@ public class TrainModel_ResNet50 extends TrainModel{
 		if(model == null) {
 			ZooModel<ResNet50> zooModel = ResNet50.builder().build();
 			baseModel = (ComputationGraph) zooModel.initPretrained(PretrainedType.IMAGENET);
-			
-//			baseModel = new TransferLearning.GraphBuilder(baseModel)
-//					.fineTuneConfiguration(fineTuneConf) // 여기 추가
-//		            .setFeatureExtractor("bn5b_branch2c")  //"block5_pool" and below are frozen
-//	                .addLayer("fc",new DenseLayer
-//	                        .Builder().activation(Activation.RELU)
-//	                        .nIn(1000)
-//	                        .nOut(256)
-//	                        .build(),"fc1000") //add in a new dense layer
-//	                .addLayer("newpredictions",new OutputLayer
-//	                        .Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-//	                        .activation(Activation.SOFTMAX)
-//	                        .nIn(256)
-//	                        .nOut(2)
-//	                        .build(),"fc") //add in a final output dense layer,
-//		            .setOutputs("newpredictions")
-//		            .build();
-			
-			baseModel = new TransferLearning.GraphBuilder(baseModel)
-					.fineTuneConfiguration(fineTuneConf) // 여기 추가
-		            .setFeatureExtractor("fc1000")  //"block5_pool" and below are frozen
-	                .addLayer("newpredictions",new OutputLayer
-	                        .Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-	                        .nIn(1000)
-	                        .nOut(2)
-	                        .activation(Activation.SOFTMAX)
-	                        .weightInit(WeightInit.XAVIER)
-	                        .build(),"fc1000") //add in a final output dense layer,
-		            .setOutputs("newpredictions")
-		            .build();
-			
-			//baseModel.setListeners(new ScoreIterationListener(50));
 			log.info("----- load successed original ResNet50 model");
 		}
 		else {
-			Layer outputLayer = model.getLayer("newpredictions");
+			Layer outputLayer = model.getLayer("fc1000");
 			if (outputLayer.conf().getLayer() instanceof OutputLayer) {
 			    OutputLayer ol = (OutputLayer) outputLayer.conf().getLayer();
 				//기존 out 가 동일할경우
 			    if(nOut == ol.getNOut()) {
+					//set listeners
+					setListeners();
 					return;
 				}
 			}
-			
 			baseModel = model;
 		}
 		
 		log.info("=================>>> ComputationGraph model update");
+		//ResNet50 마지막 layer 는 fc1000 이것을 정의한 Outputlayer 로 교체..
+		//fc1000 이전층(flatten_1)은 유지
 		model = new TransferLearning.GraphBuilder(baseModel)
 				.fineTuneConfiguration(fineTuneConf) // 여기 추가
-	            .setFeatureExtractor("fc1000")  // 마지막 flatten_1 전까지 freeze
-	            .removeVertexAndConnections("newpredictions")
-                .addLayer("newpredictions",new OutputLayer
-                        .Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .activation(Activation.SOFTMAX)
-                        .nIn(1000)
+	            .setFeatureExtractor("flatten_1")  // 마지막 flatten_1 전까지 freeze
+	            .removeVertexAndConnections("fc1000")
+                .addLayer("fc1000",new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .nIn(2048)
                         .nOut(nOut)
-                        .build(),"fc1000") //add in a final output dense layer,
-	            .setOutputs("newpredictions")
+                        .activation(Activation.SOFTMAX)
+                        .weightInit(WeightInit.XAVIER)
+                        .build(),"flatten_1") //add in a final output dense layer,
+	            .setOutputs("fc1000")
 	            .build();
 		
-//		model = new TransferLearning.GraphBuilder(baseModel)
-//				.fineTuneConfiguration(fineTuneConf) // 여기 추가
-//	            .setFeatureExtractor("flatten_1")  // 마지막 flatten_1 전까지 freeze
-//	            .removeVertexAndConnections("fc1000")
-//	            .addLayer("fc1000", new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-//	                    				.nIn(2048)  // ResNet50 마지막 flatten 출력
-//	                    				.nOut(nOut)
-//	                    				.activation(Activation.SOFTMAX)
-//	                    				.weightInit(WeightInit.XAVIER)
-//	                    				.build(), "flatten_1")
-//	            .setOutputs("fc1000")
-//	            .build();
-		
-		model.setListeners(new ScoreIterationListener(DatasetConst.EPOCHS.getValue()));
+		//set listeners
+		setListeners();
 	}
     
+	/**
+	 * set listeners
+	 */
+	private void setListeners() {
+		if(model.getListeners().size() == 0) {
+			StatsStorage statsStorage = new FileStatsStorage(super.statFile);
+			model.setListeners(
+				  new ScoreIterationListener(MLDatasetConst.EPOCHS.getValue())
+				, new RealTimeTrainingListener()
+				, new StatsListener(statsStorage)
+			);
+		}
+	}
+	
 	/**@Override 
 	 * @see kr.co.aiweb.machinelearning.trainmodel.TrainModel#fit(java.io.File)
 	 */
@@ -188,7 +150,7 @@ public class TrainModel_ResNet50 extends TrainModel{
 		updateModel(labelInfo.getLabelCount());
 		
 		log.info("---------------------------------- start training.");
-		model.fit(datasetIter, DatasetConst.EPOCHS.getValue());
+		model.fit(datasetIter, MLDatasetConst.EPOCHS.getValue());
 		
 		log.info("---------------------------------- model save.");
 		modelSave();
