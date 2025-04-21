@@ -16,7 +16,7 @@ public interface MLConst {
 		,WIDTH(224)
 		,HEIGHT(224)
 		,CHANNELS(3)
-		,EPOCHS(20)
+		,EPOCHS(10)
 		;
 		
 		@Getter

@@ -132,12 +132,12 @@ document.addEventListener("DOMContentLoaded", () => {
 	    datasets: [{
 	      label: 'Loss',
 	      data: [],
-	      borderColor: 'rgba(75, 192, 192, 1)',
+	      borderColor: 'rgba(255, 0, 0, 1)',
 	      fill: false
 	    }]
 	  },
 	  options: {
-	    animation: false,
+	    animation: true,
 	    responsive: true,
 	    scales: {
 	      y: {
@@ -147,9 +147,16 @@ document.addEventListener("DOMContentLoaded", () => {
 	  }
 	});
 
+	const MAX_X_POINTS = 100;
 	const socket = new WebSocket("ws://" + location.host + "/ws/train_chart");
 	socket.onmessage = function(event) {
 	  const data = JSON.parse(event.data);
+	  
+	  if (chart.data.labels.length >= MAX_X_POINTS) {
+		chart.data.labels.shift();                     // X축(Iteration) 제거
+		chart.data.datasets[0].data.shift();           // Y축(Loss) 제거
+	  }
+	  
 	  chart.data.labels.push(data.iteration);
 	  chart.data.datasets[0].data.push(data.loss);
 	  chart.update();
