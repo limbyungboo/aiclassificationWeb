@@ -1,0 +1,64 @@
+<!-- 파일명: index.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>🤖 AI CHAT (limseek)</title>
+  <style>
+    body { font-family: sans-serif; background: #1e1f26; }
+	.msg { margin: 10px 0; }
+	.user { color: blue; }
+	.bot { color: green; }
+    #chat-box { 
+		width: 800px; 
+		margin: 40px auto; 
+		background: white; 
+		padding: 20px; 
+		border-radius: 10px;
+	}
+	#messages { 
+		background: white; 
+		height: 600px;           /* 또는 원하는 높이 */
+		overflow-y: auto;        /* 세로 스크롤 가능하도록 */ 
+	}
+  </style>
+</head>
+<body>
+  <div id="chat-box">
+    <h2>🤖 AI CHAT (limseek) </h2>
+    <div id="messages"></div>
+    <input type="text" id="input" placeholder="메시지를 입력하세요..." style="width: 790px; height:30px;" />
+  </div>
+
+  <script>
+    //const ws = new WebSocket("ws://localhost:8765");
+	const ws = new WebSocket("ws://10.10.15.38:8765");
+    const input = document.getElementById("input");
+	const chatBox = document.getElementById("chat-box");
+    const messages = document.getElementById("messages");
+
+    ws.onmessage = (event) => {
+      const div = document.createElement("div");
+      div.className = "msg bot";
+      div.innerText = "🤖 " + event.data;
+      messages.appendChild(div);
+	  messages.scrollTop = messages.scrollHeight;
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const msg = input.value;
+        if (msg.trim() === "") return;
+
+        const div = document.createElement("div");
+        div.className = "msg user";
+        div.innerText = "🧑 " + msg;
+        messages.appendChild(div);
+        ws.send(msg);
+        input.value = "";
+		messages.scrollTop = messages.scrollHeight;
+      }
+    });
+  </script>
+</body>
+</html>

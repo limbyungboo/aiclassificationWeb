@@ -21,6 +21,11 @@ public class MainController {
 		return "view/index.html";
 	}
 	
+	@GetMapping("/chat")
+	public String chat() {
+		log.info("--------------------- chat -----------------------");
+		return "view/chat.html";
+	}
 	
 	
 }
