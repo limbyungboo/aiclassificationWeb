@@ -9,6 +9,7 @@
 	.msg { margin: 10px 0; }
 	.user { color: blue; }
 	.bot { color: green; }
+	.bot_trans { color: red; }
     #chat-box { 
 		width: 800px; 
 		margin: 40px auto; 
@@ -39,7 +40,15 @@
 
     ws.onmessage = (event) => {
       const div = document.createElement("div");
-      div.className = "msg bot";
+	  var pos = event.data.indexOf('번역 : ');
+	  
+	  if(event.data.indexOf('번역 : ') >= 0) {
+		div.className = "msg bot_trans";
+	  }
+	  else {
+		div.className = "msg bot";
+	  }
+	  
       div.innerText = "🤖 " + event.data;
       messages.appendChild(div);
 	  messages.scrollTop = messages.scrollHeight;
