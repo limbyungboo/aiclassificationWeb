@@ -8,7 +8,7 @@
     body { font-family: sans-serif; background: #1e1f26; }
 	.msg { margin: 10px 0; }
 	.user { color: blue; }
-	.bot { color: green; }
+	.bot { color: green; border: solid 1px; background-color: rgb(233, 233, 233);}
 	.bot_trans { color: red; }
     #chat-box { 
 		width: 800px; 
@@ -37,21 +37,27 @@
     const input = document.getElementById("input");
 	const chatBox = document.getElementById("chat-box");
     const messages = document.getElementById("messages");
-
+	
     ws.onmessage = (event) => {
-      const div = document.createElement("div");
-	  var pos = event.data.indexOf('번역 : ');
-	  
-	  if(event.data.indexOf('번역 : ') >= 0) {
+		const div = document.createElement("div");
+		var pos = event.data.indexOf('ORG:');
+		
+		if(pos >= 0) {
+			var trans_text = event.data.substr(0, pos);
+			div.innerText = "🤖 " + trans_text;
+
+			const childdiv = document.createElement("div");
+			var org_text = event.data.substr(pos + 4);
+			childdiv.className = "bot";
+			childdiv.innerText = org_text;
+			div.appendChild(childdiv);
+		}
+		else {
+			div.innerText = "🤖 " + event.data;
+		}
 		div.className = "msg bot_trans";
-	  }
-	  else {
-		div.className = "msg bot";
-	  }
-	  
-      div.innerText = "🤖 " + event.data;
-      messages.appendChild(div);
-	  messages.scrollTop = messages.scrollHeight;
+		messages.appendChild(div);
+		messages.scrollTop = messages.scrollHeight;
     };
 
     input.addEventListener("keydown", (e) => {
